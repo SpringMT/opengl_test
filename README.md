@@ -1,4 +1,4 @@
-## 春山のテスト
+## テスト
 GLFW
 http://www.glfw.org/
 
