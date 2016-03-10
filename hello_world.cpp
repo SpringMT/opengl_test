@@ -52,7 +52,15 @@ int main(int argc, char *argv[])
 
   // GLFWのwindowはダブルバッファリングを行っている
   // http://e-words.jp/w/%E3%83%80%E3%83%96%E3%83%AB%E3%83%90%E3%83%83%E3%83%95%E3%82%A1%E3%83%AA%E3%83%B3%E3%82%B0.html
-  // 
+  // swap intervalはバッファーを交換するまでどれくらいのflame数待つかを指し示す
+  // デフォルトでは0 -> 即座に交換が行われる
+  // スクリーンの更新最中にスワップが行われるとチラつきの原因になる
+  // スクリーンティアリング
+  // https://books.google.co.jp/books?id=UdRr-DQ_qzkC&pg=PA73&lpg=PA73&dq=%E3%83%90%E3%83%83%E3%83%95%E3%82%A1+%E3%82%B9%E3%83%AF%E3%83%83%E3%83%97+%E3%83%86%E3%82%A3%E3%82%A2%E3%83%AA%E3%83%B3%E3%82%B0+%E3%82%B9%E3%82%AF%E3%83%AA%E3%83%BC%E3%83%B3%E6%9B%B4%E6%96%B0&source=bl&ots=3_WJP4PWP4&sig=D926cFmj7VRnu4C7cgAr_BtHngk&hl=ja&sa=X&ved=0ahUKEwi5z9nygLTLAhXGMKYKHU_7A9UQ6AEIGzAA#v=onepage&q=%E3%83%90%E3%83%83%E3%83%95%E3%82%A1%20%E3%82%B9%E3%83%AF%E3%83%83%E3%83%97%20%E3%83%86%E3%82%A3%E3%82%A2%E3%83%AA%E3%83%B3%E3%82%B0%20%E3%82%B9%E3%82%AF%E3%83%AA%E3%83%BC%E3%83%B3%E6%9B%B4%E6%96%B0&f=false
+  //
+  // http://lavendy.net/pso2/2014/01/vsync_tearing_extra.html
+  // このような理由から、スワップインターバルは通常1に設定する
+  // 1以上設定するのはおすすめされない(inputのレイテンシー)
   glfwSwapInterval(1);
 
   // windowに対するキーcallbackの設定
@@ -68,6 +76,11 @@ int main(int argc, char *argv[])
   {
     float ratio;
     int width, height;
+    // 現在のOpenGL contextを取得できたら、OpenGLは普通に使えます
+    // マルチカラーで回転する三角形をレンダリングしてみます
+    // http://qiita.com/edo_m18/items/95483cabf50494f53bb5
+    // flamebuffer glViewportからflamebufferを取得する
+    // glfwSetFramebufferSizeCallbackでframebuffer size callbackを設定できる
     glfwGetFramebufferSize(window, &width, &height);
     ratio = width / (float) height;
     glViewport(0, 0, width, height);
@@ -86,7 +99,12 @@ int main(int argc, char *argv[])
     glColor3f(0.f, 0.f, 1.f);
     glVertex3f(0.f, 0.6f, 0.f);
     glEnd();
+    // フロントバッファーとバックバッファーはお互い交換する必要がある
+    // https://developer.apple.com/library/ios/documentation/3DDrawing/Conceptual/OpenGLES_ProgrammingGuide/OpenGLESApplicationDesign/OpenGLESApplicationDesign.html#//apple_ref/doc/uid/TP40008793-CH6-SW5
+    // 入れ替えるときに使う
     glfwSwapBuffers(window);
+    // マウスやキー入力のイベントはこの関数で監視する。
+    // 待ちになっているイベントを処理する
     glfwPollEvents();
   }
 
